@@ -1,0 +1,136 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import ServerCard from '~/components/ServerCard.astro';
+import { allServers, getServerBySlug, getRelatedServers, categoryLabel } from '~/lib/data';
+
+export async function getStaticPaths() {
+  return allServers.map((s) => ({ params: { slug: s.slug } }));
+}
+
+const { slug } = Astro.params;
+const server = getServerBySlug(slug as string);
+if (!server) {
+  return Astro.redirect('/404');
+}
+
+const related = getRelatedServers(server, 6);
+const title = `${server.name} — ${categoryLabel(server.category)} MCP server`;
+const description = server.description.length > 155
+  ? server.description.slice(0, 152) + '…'
+  : server.description;
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: server.name,
+    description: server.description,
+    applicationCategory: 'DeveloperApplication',
+    operatingSystem: 'Cross-platform',
+    url: server.url,
+    aggregateRating: server.stars > 0 ? {
+      '@type': 'AggregateRating',
+      ratingValue: '5',
+      ratingCount: server.stars,
+    } : undefined,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: Astro.site?.toString() },
+      { '@type': 'ListItem', position: 2, name: categoryLabel(server.category), item: `${Astro.site?.toString().replace(/\/$/, '')}/categories/${server.category}/` },
+      { '@type': 'ListItem', position: 3, name: server.name },
+    ],
+  },
+];
+---
+
+<BaseLayout title={title} description={description} jsonLd={jsonLd}>
+  <article class="px-4 mx-auto max-w-4xl pt-10 pb-20">
+    <nav class="text-xs text-slate-500 mb-4">
+      <a href="/" class="hover:text-white">Home</a> ·
+      <a href={`/categories/${server.category}/`} class="hover:text-white">{categoryLabel(server.category)}</a> ·
+      <span class="text-slate-400">{server.name}</span>
+    </nav>
+
+    <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+      <div>
+        <h1 class="text-3xl sm:text-4xl font-bold text-white">{server.name}</h1>
+        <p class="text-slate-400 mt-1">
+          by <a class="hover:text-white underline" href={`https://github.com/${server.owner}`} rel="nofollow noopener" target="_blank">{server.owner}</a>
+          {server.language && <> · {server.language}</>}
+          · ★ {server.stars.toLocaleString()}
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        {server.featured && <span class="px-2 py-1 text-xs rounded bg-brand-700 text-white">Featured</span>}
+        {server.official && <span class="px-2 py-1 text-xs rounded bg-emerald-700 text-white">Official</span>}
+        <a
+          href={server.url}
+          rel="nofollow noopener"
+          target="_blank"
+          class="px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium text-sm"
+        >
+          View on GitHub ↗
+        </a>
+      </div>
+    </header>
+
+    <p class="mt-6 text-lg text-slate-200">{server.description}</p>
+
+    {server.topics.length > 0 && (
+      <div class="mt-4 flex flex-wrap gap-2">
+        {server.topics.map((t) => (
+          <span class="text-xs px-2 py-0.5 rounded bg-slate-800 text-slate-400">#{t}</span>
+        ))}
+      </div>
+    )}
+
+    <section class="mt-10">
+      <h2 class="text-xl font-semibold text-white mb-3">Install</h2>
+      <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-sm text-slate-100"><code>{server.installCommand}</code></pre>
+    </section>
+
+    <section class="mt-10">
+      <h2 class="text-xl font-semibold text-white mb-3">Claude Desktop config</h2>
+      <p class="text-sm text-slate-400 mb-3">
+        Add this to your <code class="text-brand-500">claude_desktop_config.json</code>:
+      </p>
+      <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-sm text-slate-100"><code>{server.configSnippet}</code></pre>
+    </section>
+
+    {server.readmeExcerpt && (
+      <section class="mt-10">
+        <h2 class="text-xl font-semibold text-white mb-3">From the README</h2>
+        <div class="prose-invert-tight whitespace-pre-line text-slate-300">
+          {server.readmeExcerpt}
+        </div>
+        <a
+          href={`${server.url}#readme`}
+          rel="nofollow noopener"
+          target="_blank"
+          class="inline-block mt-3 text-sm text-brand-500 hover:text-brand-100"
+        >
+          Read full README on GitHub →
+        </a>
+      </section>
+    )}
+
+    <section class="mt-12 rounded-xl border border-brand-700/50 bg-brand-700/10 p-5">
+      <h3 class="text-white font-semibold">💡 Need a managed MCP host?</h3>
+      <p class="text-slate-300 text-sm mt-1">
+        Try <a href="https://www.anthropic.com/claude" rel="sponsored noopener" target="_blank" class="text-brand-100 underline">Claude Pro</a> for the smoothest MCP experience, or browse our <a href="/categories/cloud/" class="text-brand-100 underline">cloud-hosted servers</a>.
+      </p>
+    </section>
+
+    {related.length > 0 && (
+      <section class="mt-14">
+        <h2 class="text-xl font-semibold text-white mb-4">Related {categoryLabel(server.category).toLowerCase()} servers</h2>
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {related.map((s) => <ServerCard server={s} />)}
+        </div>
+      </section>
+    )}
+  </article>
+</BaseLayout>

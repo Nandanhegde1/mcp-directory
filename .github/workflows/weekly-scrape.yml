@@ -1,0 +1,40 @@
+name: Weekly MCP scrape
+
+on:
+  schedule:
+    # Sundays at 03:17 UTC — odd minute to avoid GitHub's busy on-the-hour windows
+    - cron: '17 3 * * 0'
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+
+      - name: Run scraper
+        env:
+          GITHUB_TOKEN: ${{ secrets.SCRAPER_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
+        run: npm run scrape
+
+      - name: Commit & push if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [[ -n "$(git status --porcelain src/data/servers.json)" ]]; then
+            git add src/data/servers.json
+            git commit -m "chore: weekly scrape $(date -u +%Y-%m-%d)"
+            git push
+          else
+            echo "No changes."
+          fi
