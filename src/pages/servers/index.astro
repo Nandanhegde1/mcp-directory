@@ -1,0 +1,85 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import ServerCard from '~/components/ServerCard.astro';
+import { allServers, categories } from '~/lib/data';
+
+const sorted = [...allServers].sort((a, b) => b.stars - a.stars);
+---
+
+<BaseLayout
+  title={`All MCP Servers (${sorted.length}) — MCP Directory`}
+  description={`Browse all ${sorted.length} indexed Model Context Protocol servers. Filter by category, search by name, see install commands.`}
+>
+  <section class="px-4 mx-auto max-w-6xl pt-10">
+    <h1 class="text-3xl font-bold text-white">All MCP servers</h1>
+    <p class="text-slate-400 mt-2">{sorted.length} servers indexed.</p>
+
+    <div class="mt-6 flex flex-col sm:flex-row gap-3">
+      <input
+        type="search"
+        id="search"
+        placeholder="Search by name or description…"
+        class="flex-1 px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-white placeholder:text-slate-500 focus:outline-none focus:border-brand-500"
+      />
+      <select
+        id="category-filter"
+        class="px-4 py-2.5 rounded-lg bg-slate-900 border border-slate-800 text-white focus:outline-none focus:border-brand-500"
+      >
+        <option value="">All categories</option>
+        {categories.map((c) => <option value={c.id}>{c.label}</option>)}
+      </select>
+    </div>
+
+    <p id="result-count" class="mt-4 text-sm text-slate-400">{sorted.length} results</p>
+  </section>
+
+  <section class="px-4 mx-auto max-w-6xl mt-6 mb-20">
+    {sorted.length === 0 ? (
+      <p class="text-slate-400">No servers indexed yet. Run the scraper.</p>
+    ) : (
+      <div id="server-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {sorted.map((s) => <ServerCard server={s} />)}
+      </div>
+    )}
+  </section>
+
+  <script>
+    const search = document.getElementById('search') as HTMLInputElement | null;
+    const filter = document.getElementById('category-filter') as HTMLSelectElement | null;
+    const grid = document.getElementById('server-grid');
+    const counter = document.getElementById('result-count');
+    if (!grid || !counter) {
+      // nothing to do
+    } else {
+      const cards = Array.from(grid.children) as HTMLElement[];
+
+      const apply = () => {
+        const q = (search?.value ?? '').trim().toLowerCase();
+        const cat = filter?.value ?? '';
+        let visible = 0;
+        for (const card of cards) {
+          const name = card.dataset.serverName ?? '';
+          const desc = card.dataset.serverDesc ?? '';
+          const c = card.dataset.serverCategory ?? '';
+          const matchesQ = !q || name.includes(q) || desc.includes(q);
+          const matchesC = !cat || c === cat;
+          const show = matchesQ && matchesC;
+          card.style.display = show ? '' : 'none';
+          if (show) visible++;
+        }
+        counter.textContent = `${visible} result${visible === 1 ? '' : 's'}`;
+      };
+
+      // hydrate query param
+      const params = new URLSearchParams(location.search);
+      const initialQ = params.get('q');
+      if (initialQ && search) search.value = initialQ;
+      const initialCat = params.get('category');
+      if (initialCat && filter) filter.value = initialCat;
+
+      search?.addEventListener('input', apply);
+      filter?.addEventListener('change', apply);
+      apply();
+    }
+  </script>
+</BaseLayout>

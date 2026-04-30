@@ -1,0 +1,119 @@
+---
+import '~/styles/global.css';
+import { generatedAt } from '~/lib/data';
+
+interface Props {
+  title: string;
+  description: string;
+  /** Path-only or full URL; will be resolved against site */
+  canonical?: string;
+  /** OG image path (defaults to /og-default.png) */
+  ogImage?: string;
+  /** Optional JSON-LD object to inline */
+  jsonLd?: Record<string, unknown> | Record<string, unknown>[];
+  /** noindex flag for legal pages, etc */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  canonical,
+  ogImage = '/og-default.svg',
+  jsonLd,
+  noindex = false,
+} = Astro.props;
+
+const siteUrl = Astro.site?.toString().replace(/\/$/, '') ?? '';
+const canonicalUrl = canonical
+  ? canonical.startsWith('http')
+    ? canonical
+    : `${siteUrl}${canonical}`
+  : `${siteUrl}${Astro.url.pathname}`;
+const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
+
+const adsenseClient = import.meta.env.PUBLIC_ADSENSE_CLIENT || '';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <link rel="canonical" href={canonicalUrl} />
+    {noindex && <meta name="robots" content="noindex,nofollow" />}
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:site_name" content="MCP Directory" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <!-- Fonts (system stack to avoid network hit; can swap to Inter via Bunny if desired) -->
+    <link rel="preconnect" href="https://fonts.bunny.net" />
+    <link
+      href="https://fonts.bunny.net/css?family=inter:400,500,600,700|jetbrains-mono:400,500"
+      rel="stylesheet"
+    />
+
+    {jsonLd && (
+      <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+    )}
+
+    {adsenseClient && (
+      <script
+        async
+        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+        crossorigin="anonymous"
+      ></script>
+    )}
+  </head>
+  <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
+    <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-30">
+      <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between gap-4">
+        <a href="/" class="flex items-center gap-2 font-semibold text-white">
+          <span class="inline-block h-7 w-7 rounded-md bg-gradient-to-br from-brand-500 to-brand-700"></span>
+          <span>MCP Directory</span>
+        </a>
+        <nav class="flex items-center gap-1 text-sm">
+          <a href="/categories/" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800">Categories</a>
+          <a href="/servers/" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800">All Servers</a>
+          <a href="/submit/" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800">Submit</a>
+          <a href="/blog/" class="px-3 py-1.5 rounded-md text-slate-300 hover:text-white hover:bg-slate-800 hidden sm:inline">Blog</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <slot />
+    </main>
+
+    <footer class="border-t border-slate-800 mt-16">
+      <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-slate-400 flex flex-col sm:flex-row gap-4 justify-between">
+        <div>
+          <p>© {new Date().getFullYear()} MCP Directory. Independent project, not affiliated with Anthropic.</p>
+          <p class="mt-1 text-slate-500 text-xs">Index last refreshed {new Date(generatedAt).toLocaleDateString()}.</p>
+        </div>
+        <div class="flex gap-4">
+          <a class="hover:text-white" href="/about/">About</a>
+          <a class="hover:text-white" href="/submit/">Submit a server</a>
+          <a class="hover:text-white" href="/featured/">Get featured</a>
+          <a class="hover:text-white" href="https://modelcontextprotocol.io" rel="nofollow noopener" target="_blank">MCP Spec ↗</a>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>
