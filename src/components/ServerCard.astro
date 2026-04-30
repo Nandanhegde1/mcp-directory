@@ -6,6 +6,9 @@ interface Props {
   server: McpServer;
 }
 const { server } = Astro.props;
+
+const avatarUrl = `https://avatars.githubusercontent.com/${server.owner}?s=48`;
+const initials = (server.name.replace(/[^a-z0-9]+/gi, ' ').trim().split(' ').slice(0, 2).map((w) => w[0]?.toUpperCase() ?? '').join('')) || '?';
 ---
 
 <a
@@ -14,25 +17,47 @@ const { server } = Astro.props;
   data-server-slug={server.slug}
   data-server-name={server.name.toLowerCase()}
   data-server-desc={server.description.toLowerCase()}
+  data-server-owner={server.owner.toLowerCase()}
+  data-server-topics={server.topics.join(' ').toLowerCase()}
   data-server-category={server.category}
 >
-  <div class="flex items-start justify-between gap-3">
-    <div class="min-w-0">
-      <h3 class="font-semibold text-white group-hover:text-brand-100 truncate">
-        {server.name}
-      </h3>
-      <p class="text-xs text-slate-500 truncate">{server.owner}</p>
+  <div class="flex items-start gap-3">
+    <div class="shrink-0 relative">
+      <img
+        src={avatarUrl}
+        alt=""
+        loading="lazy"
+        decoding="async"
+        width="40"
+        height="40"
+        class="h-10 w-10 rounded-md bg-slate-800 object-cover"
+        onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
+      />
+      <div
+        class="h-10 w-10 rounded-md bg-gradient-to-br from-brand-500 to-brand-700 text-white text-sm font-semibold items-center justify-center"
+        style="display:none"
+      >
+        {initials}
+      </div>
     </div>
-    <div class="flex items-center gap-2 shrink-0">
-      {server.featured && (
-        <span class="text-[10px] uppercase tracking-wide bg-brand-700 text-white px-2 py-0.5 rounded">Featured</span>
-      )}
-      {server.official && (
-        <span class="text-[10px] uppercase tracking-wide bg-emerald-700 text-white px-2 py-0.5 rounded">Official</span>
-      )}
-      <span class="text-xs text-slate-400 inline-flex items-center gap-1">
-        ★ {server.stars.toLocaleString()}
-      </span>
+    <div class="min-w-0 flex-1">
+      <div class="flex items-start justify-between gap-2">
+        <div class="min-w-0">
+          <h3 class="font-semibold text-white group-hover:text-brand-100 truncate">
+            {server.name}
+          </h3>
+          <p class="text-xs text-slate-500 truncate">{server.owner}</p>
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0">
+          {server.featured && (
+            <span class="text-[10px] uppercase tracking-wide bg-brand-700 text-white px-1.5 py-0.5 rounded">Featured</span>
+          )}
+          {server.official && (
+            <span class="text-[10px] uppercase tracking-wide bg-emerald-700 text-white px-1.5 py-0.5 rounded">Official</span>
+          )}
+          <span class="text-xs text-slate-400 whitespace-nowrap">★ {server.stars.toLocaleString()}</span>
+        </div>
+      </div>
     </div>
   </div>
   <p class="mt-3 text-sm text-slate-300 line-clamp-3">{server.description}</p>
