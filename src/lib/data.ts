@@ -1,14 +1,15 @@
 import type { McpServer, McpCategory } from '~/types';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
-// Vite's import.meta.glob with eager+raw is the most reliable way to embed a JSON file at build time
-// without depending on JSON-import resolver quirks across rollup/vite/astro versions.
-const files = import.meta.glob('./data/*.json', { eager: true, import: 'default' }) as Record<string, unknown>;
-const manifest = (files['./data/servers.json'] ?? { generatedAt: new Date().toISOString(), count: 0, servers: [] }) as {
+// Read at module load time. process.cwd() is the project root during `astro build`,
+// which is more reliable than __dirname after rollup bundling.
+const manifestPath = resolve(process.cwd(), 'src', 'data', 'servers.json');
+const data = JSON.parse(readFileSync(manifestPath, 'utf8')) as {
   generatedAt: string;
   count: number;
   servers: McpServer[];
 };
-const data = manifest;
 
 export const allServers: McpServer[] = data.servers;
 export const generatedAt: string = data.generatedAt;
