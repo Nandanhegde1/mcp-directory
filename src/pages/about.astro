@@ -1,0 +1,42 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="About — MCP Directory"
+  description="MCP Directory is an independent, weekly-updated index of every public Model Context Protocol server on GitHub."
+>
+  <section class="px-4 mx-auto max-w-2xl pt-10 pb-20 prose-invert-tight">
+    <h1 class="text-3xl font-bold text-white">About MCP Directory</h1>
+
+    <p class="mt-4">
+      MCP Directory indexes public <a href="https://modelcontextprotocol.io" rel="noopener" target="_blank">Model Context Protocol</a>
+      servers from GitHub and organizes them so AI engineers can find the right tool quickly.
+    </p>
+
+    <h2 class="text-xl font-semibold text-white mt-8">How it works</h2>
+    <p class="mt-2">
+      A weekly script scans GitHub for repos tagged with <code>mcp</code>, <code>model-context-protocol</code>,
+      or that mention MCP in their README. We extract metadata, infer a category, and rebuild the static site.
+      No tracking beyond simple privacy-friendly analytics.
+    </p>
+
+    <h2 class="text-xl font-semibold text-white mt-8">Monetization disclosure</h2>
+    <p class="mt-2">
+      The site is free. We make money via (1) optional <a href="/featured/">featured listings</a> ($29/30 days),
+      (2) display ads, and (3) affiliate links to managed-MCP services. Paid placement does not affect category ranking
+      beyond the explicit "Featured" rail, and we always disclose it.
+    </p>
+
+    <h2 class="text-xl font-semibold text-white mt-8">Independence</h2>
+    <p class="mt-2">
+      MCP Directory is not affiliated with Anthropic or the MCP authors. The MCP spec and trademarks belong to their owners.
+    </p>
+
+    <h2 class="text-xl font-semibold text-white mt-8">Contact</h2>
+    <p class="mt-2">
+      Submit servers via <a href="/submit/">the submit form</a>. For takedown requests, listing fixes, or partnership inquiries,
+      reach out via the same form (use the notes field).
+    </p>
+  </section>
+</BaseLayout>

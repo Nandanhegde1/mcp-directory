@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build
+dist/
+.astro/
+.cache/
+
+# Env
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Generated data (committed for reproducibility but ignored on dev)
+# src/data/servers.json  # uncomment if you want to gitignore the dataset

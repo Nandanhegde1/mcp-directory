@@ -1,0 +1,15 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+---
+
+<BaseLayout
+  title="404 — Not Found | MCP Directory"
+  description="That page doesn't exist."
+  noindex={true}
+>
+  <section class="px-4 mx-auto max-w-xl pt-20 pb-20 text-center">
+    <h1 class="text-4xl font-bold text-white">404</h1>
+    <p class="text-slate-300 mt-3">That page doesn't exist (yet).</p>
+    <a href="/" class="inline-block mt-6 px-4 py-2 rounded-lg bg-brand-600 hover:bg-brand-500 text-white">Back to home</a>
+  </section>
+</BaseLayout>

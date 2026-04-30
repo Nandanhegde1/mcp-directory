@@ -1,0 +1,103 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+import ServerCard from '~/components/ServerCard.astro';
+import { allServers, categories, getTopServers, getFeaturedServers, getRecentlyUpdated } from '~/lib/data';
+
+const top = getTopServers(12);
+const featured = getFeaturedServers(6);
+const recent = getRecentlyUpdated(6);
+
+const totalCount = allServers.length;
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'MCP Directory',
+  url: Astro.site?.toString(),
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: `${Astro.site?.toString().replace(/\/$/, '')}/servers/?q={search_term_string}`,
+    'query-input': 'required name=search_term_string',
+  },
+};
+---
+
+<BaseLayout
+  title={`MCP Directory — ${totalCount}+ Model Context Protocol servers, indexed`}
+  description={`Browse ${totalCount}+ MCP (Model Context Protocol) servers for Claude, Cursor, and other AI clients. Install instructions, configs, and categories — updated weekly.`}
+  jsonLd={jsonLd}
+>
+  <section class="px-4 pt-16 pb-12 text-center">
+    <div class="mx-auto max-w-3xl">
+      <span class="inline-block text-xs uppercase tracking-widest text-brand-500 font-semibold">
+        Model Context Protocol
+      </span>
+      <h1 class="mt-3 text-4xl sm:text-5xl font-bold tracking-tight text-white">
+        Find the right <span class="bg-gradient-to-r from-brand-500 to-pink-500 bg-clip-text text-transparent">MCP server</span> for your AI workflow.
+      </h1>
+      <p class="mt-5 text-lg text-slate-300">
+        {totalCount > 0
+          ? `${totalCount} servers indexed across ${categories.length} categories. Updated weekly from GitHub.`
+          : 'A curated, weekly-updated index of every public MCP server on GitHub.'}
+      </p>
+      <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="/servers/" class="px-5 py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium">
+          Browse all servers
+        </a>
+        <a href="/categories/" class="px-5 py-3 rounded-lg border border-slate-700 hover:bg-slate-900 text-slate-200 font-medium">
+          By category
+        </a>
+      </div>
+    </div>
+  </section>
+
+  {featured.length > 0 && (
+    <section class="px-4 mx-auto max-w-6xl mb-14">
+      <div class="flex items-baseline justify-between mb-4">
+        <h2 class="text-xl font-semibold text-white">⭐ Featured</h2>
+        <a class="text-sm text-slate-400 hover:text-white" href="/featured/">Get featured →</a>
+      </div>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {featured.map((s) => <ServerCard server={s} />)}
+      </div>
+    </section>
+  )}
+
+  <section class="px-4 mx-auto max-w-6xl mb-14">
+    <div class="flex items-baseline justify-between mb-4">
+      <h2 class="text-xl font-semibold text-white">🏆 Most popular</h2>
+      <a class="text-sm text-slate-400 hover:text-white" href="/servers/">View all →</a>
+    </div>
+    {top.length === 0 ? (
+      <p class="text-slate-400 text-sm">Run <code class="text-brand-500">npm run scrape</code> to populate the directory.</p>
+    ) : (
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {top.map((s) => <ServerCard server={s} />)}
+      </div>
+    )}
+  </section>
+
+  <section class="px-4 mx-auto max-w-6xl mb-14">
+    <h2 class="text-xl font-semibold text-white mb-4">🗂️ Browse by category</h2>
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+      {categories.map((c) => (
+        <a
+          href={`/categories/${c.id}/`}
+          class="card p-4 group"
+        >
+          <div class="font-medium text-white group-hover:text-brand-100">{c.label}</div>
+          <p class="text-sm text-slate-400 mt-1 line-clamp-2">{c.description}</p>
+        </a>
+      ))}
+    </div>
+  </section>
+
+  {recent.length > 0 && (
+    <section class="px-4 mx-auto max-w-6xl mb-20">
+      <h2 class="text-xl font-semibold text-white mb-4">🆕 Recently updated</h2>
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        {recent.map((s) => <ServerCard server={s} />)}
+      </div>
+    </section>
+  )}
+</BaseLayout>

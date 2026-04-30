@@ -1,0 +1,52 @@
+---
+import BaseLayout from '~/layouts/BaseLayout.astro';
+const formspreeId = import.meta.env.PUBLIC_FORMSPREE_ID || '';
+const action = formspreeId ? `https://formspree.io/f/${formspreeId}` : '#';
+---
+
+<BaseLayout
+  title="Submit your MCP server — MCP Directory"
+  description="Add your Model Context Protocol server to the directory. Free listing, indexed within a week."
+>
+  <section class="px-4 mx-auto max-w-2xl pt-10 pb-20">
+    <h1 class="text-3xl font-bold text-white">Submit an MCP server</h1>
+    <p class="text-slate-300 mt-3">
+      Free listings are reviewed weekly. Public GitHub repos that mention MCP in their README are auto-indexed —
+      you can also submit here to fast-track or fix metadata.
+    </p>
+
+    {!formspreeId && (
+      <div class="mt-6 rounded-lg border border-yellow-700/50 bg-yellow-900/20 p-4 text-sm text-yellow-200">
+        ⚠️ Form not configured yet. Set <code>PUBLIC_FORMSPREE_ID</code> in your environment to enable submissions.
+      </div>
+    )}
+
+    <form action={action} method="POST" class="mt-8 space-y-4">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1" for="repo">GitHub repo URL *</label>
+        <input id="repo" name="repo" type="url" required placeholder="https://github.com/owner/repo" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white" />
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300 mb-1" for="email">Your email *</label>
+        <input id="email" name="email" type="email" required class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white" />
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300 mb-1" for="category">Suggested category</label>
+        <input id="category" name="category" type="text" placeholder="e.g. database, devtools, productivity" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white" />
+      </div>
+      <div>
+        <label class="block text-sm text-slate-300 mb-1" for="notes">Notes</label>
+        <textarea id="notes" name="notes" rows="4" class="w-full px-3 py-2 rounded-lg bg-slate-900 border border-slate-800 text-white"></textarea>
+      </div>
+      <input type="text" name="_gotcha" style="display:none" />
+      <button type="submit" class="px-5 py-2.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium" disabled={!formspreeId}>
+        Submit
+      </button>
+    </form>
+
+    <div class="mt-12 rounded-xl border border-brand-700/50 bg-brand-700/10 p-5">
+      <h2 class="text-white font-semibold">Want a featured listing?</h2>
+      <p class="text-slate-300 text-sm mt-1">$29 for 30 days on the homepage + category top. <a href="/featured/" class="text-brand-100 underline">Learn more →</a></p>
+    </div>
+  </section>
+</BaseLayout>
