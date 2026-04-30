@@ -48,11 +48,21 @@ const jsonLd = [
 
 <BaseLayout title={title} description={description} jsonLd={jsonLd}>
   <article class="px-4 mx-auto max-w-4xl pt-10 pb-20">
-    <nav class="text-xs text-slate-500 mb-4">
-      <a href="/" class="hover:text-white">Home</a> ·
-      <a href={`/categories/${server.category}/`} class="hover:text-white">{categoryLabel(server.category)}</a> ·
-      <span class="text-slate-400">{server.name}</span>
-    </nav>
+    <div class="flex items-center justify-between gap-3 mb-4">
+      <nav class="text-xs text-slate-500 truncate">
+        <a href="/" class="hover:text-white">Home</a> ·
+        <a href={`/categories/${server.category}/`} class="hover:text-white">{categoryLabel(server.category)}</a> ·
+        <span class="text-slate-400">{server.name}</span>
+      </nav>
+      <a
+        href="/servers/"
+        class="shrink-0 inline-flex items-center gap-1.5 text-sm text-slate-300 hover:text-white px-3 py-1.5 rounded-md border border-slate-800 hover:border-slate-700 hover:bg-slate-900"
+        data-back-link
+      >
+        <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M12.78 5.22a.75.75 0 0 1 0 1.06L9.06 10l3.72 3.72a.75.75 0 1 1-1.06 1.06l-4.25-4.25a.75.75 0 0 1 0-1.06l4.25-4.25a.75.75 0 0 1 1.06 0Z" clip-rule="evenodd"/></svg>
+        Back
+      </a>
+    </div>
 
     <header class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div>
@@ -133,4 +143,19 @@ const jsonLd = [
       </section>
     )}
   </article>
+
+  <script>
+    // Back button uses browser history when there's a same-origin referrer; otherwise links to /servers/
+    const back = document.querySelector('[data-back-link]') as HTMLAnchorElement | null;
+    if (back) {
+      const ref = document.referrer;
+      const sameOrigin = ref && (() => { try { return new URL(ref).origin === location.origin; } catch { return false; } })();
+      if (sameOrigin && window.history.length > 1) {
+        back.addEventListener('click', (e) => {
+          e.preventDefault();
+          history.back();
+        });
+      }
+    }
+  </script>
 </BaseLayout>
