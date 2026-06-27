@@ -38,7 +38,7 @@ const jsonLd = {
       <p class="mt-5 text-lg text-slate-300">
         {totalCount > 0
           ? `${totalCount} servers indexed across ${categories.length} categories. Updated weekly from GitHub.`
-          : 'A curated, weekly-updated index of every public MCP server on GitHub.'}
+          : 'A curated, weekly-updated index of 2,100+ public MCP servers on GitHub.'}
       </p>
       <div class="mt-8 flex flex-col sm:flex-row gap-3 justify-center">
         <a href="/servers/" class="px-5 py-3 rounded-lg bg-brand-600 hover:bg-brand-500 text-white font-medium">
@@ -55,7 +55,6 @@ const jsonLd = {
     <section class="px-4 mx-auto max-w-6xl mb-14">
       <div class="flex items-baseline justify-between mb-4">
         <h2 class="text-xl font-semibold text-white">⭐ Featured</h2>
-        <a class="text-sm text-slate-400 hover:text-white" href="/featured/">Get featured →</a>
       </div>
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {featured.map((s) => <ServerCard server={s} />)}

@@ -28,11 +28,6 @@ const jsonLd = [
     applicationCategory: 'DeveloperApplication',
     operatingSystem: 'Cross-platform',
     url: server.url,
-    aggregateRating: server.stars > 0 ? {
-      '@type': 'AggregateRating',
-      ratingValue: '5',
-      ratingCount: server.stars,
-    } : undefined,
   },
   {
     '@context': 'https://schema.org',
