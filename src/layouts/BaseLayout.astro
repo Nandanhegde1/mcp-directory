@@ -31,8 +31,6 @@ const canonicalUrl = canonical
     : `${siteUrl}${canonical}`
   : `${siteUrl}${Astro.url.pathname}`;
 const ogImageUrl = ogImage.startsWith('http') ? ogImage : `${siteUrl}${ogImage}`;
-
-const adsenseClient = import.meta.env.PUBLIC_ADSENSE_CLIENT || '';
 ---
 
 <!doctype html>
@@ -71,14 +69,6 @@ const adsenseClient = import.meta.env.PUBLIC_ADSENSE_CLIENT || '';
 
     {jsonLd && (
       <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-    )}
-
-    {adsenseClient && (
-      <script
-        async
-        src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
-        crossorigin="anonymous"
-      ></script>
     )}
   </head>
   <body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
