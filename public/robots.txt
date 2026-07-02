@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://mcp-directory.pages.dev/sitemap-index.xml
+Sitemap: https://mcp-directory.nandanhegde1096.workers.dev/sitemap-index.xml
