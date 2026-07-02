@@ -26,3 +26,9 @@ npm-debug.log*
 
 # Generated data (committed for reproducibility but ignored on dev)
 # src/data/servers.json  # uncomment if you want to gitignore the dataset
+
+# wrangler files
+.wrangler
+.dev.vars*
+!.dev.vars.example
+!.env.example
