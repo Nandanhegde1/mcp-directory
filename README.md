@@ -6,7 +6,7 @@ A free, static, SEO-first directory of every public **Model Context Protocol (MC
 - **Data source:** [GitHub Search API](https://docs.github.com/en/rest/search) (public repos tagged `mcp-server`, `model-context-protocol`, etc.)
 - **Refresh cadence:** weekly via GitHub Actions cron (Sundays 03:17 UTC)
 - **License:** MIT
-- **Servers indexed:** ~2,000 (metadata-verified MCP projects only; auto-updates each Sunday)
+- **Servers indexed:** ~1,800 (metadata-verified MCP projects only; auto-updates each Sunday)
 
 ## Why
 

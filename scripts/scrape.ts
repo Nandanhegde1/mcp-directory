@@ -205,15 +205,23 @@ function buildConfigSnippet(repo: GhRepo): string {
 
 function isLikelyMcpServer(repo: GhRepo, _readme: string): boolean {
   if (repo.archived || repo.fork) return false;
+  // Official orgs are always in scope.
+  if (['modelcontextprotocol', 'anthropics'].includes(repo.owner.login.toLowerCase())) return true;
   // Curated link lists aren't servers.
   if (/^awesome[-_.]/i.test(repo.name)) return false;
-  // Precision over recall: the repo's OWN metadata (name/description/topics) must
-  // be MCP-related. A passing README mention is not enough — huge projects that
-  // merely integrate with MCP (browsers, workflow engines, tutorial repos) were
-  // polluting the index and are exactly what an MCP-literate reader spots first.
+  // Precision over recall: the repo's OWN metadata must identify it as an MCP
+  // project. A passing README mention is not enough, and neither is a bare
+  // `mcp` topic — huge unrelated projects (workflow engines, tutorial repos)
+  // tag `mcp` for discoverability and were polluting the index; that's exactly
+  // what an MCP-literate reader spots first. Qualifying signals:
+  //   - "mcp" in the repo NAME, or
+  //   - a specific topic: mcp-server(s) / mcp-client / model-context-protocol, or
+  //   - MCP named in the repo's own DESCRIPTION.
   const name = repo.name.toLowerCase();
-  const meta = `${repo.description ?? ''} ${(repo.topics ?? []).join(' ')}`.toLowerCase();
-  return /mcp/.test(name) || /\bmcp\b|model[\s-]?context[\s-]?protocol|modelcontextprotocol/.test(meta);
+  if (/mcp/.test(name)) return true;
+  const topics = (repo.topics ?? []).map((t) => t.toLowerCase());
+  if (topics.some((t) => /^mcp-servers?$|^mcp-client$|^model-context-protocol$/.test(t))) return true;
+  return /\bmcp\b|model[\s-]?context[\s-]?protocol|modelcontextprotocol/.test((repo.description ?? '').toLowerCase());
 }
 
 async function main(): Promise<void> {
