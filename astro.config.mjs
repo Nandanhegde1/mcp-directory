@@ -3,8 +3,8 @@ import { defineConfig } from 'astro/config';
 import tailwind from '@astrojs/tailwind';
 import sitemap from '@astrojs/sitemap';
 
-// CHANGE THIS once you buy a domain (e.g., 'https://mcphub.dev')
-const SITE_URL = process.env.SITE_URL || 'https://mcp-directory.pages.dev';
+// The live deploy is the Cloudflare Worker below. Override with SITE_URL env once a custom domain is bought.
+const SITE_URL = process.env.SITE_URL || 'https://mcp-directory.nandanhegde1096.workers.dev';
 
 export default defineConfig({
   site: SITE_URL,

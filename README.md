@@ -41,7 +41,7 @@ npm run build           # outputs static site to ./dist
 2. Each server gets a normalized record: name, description, language, stars, last push, topics, license, owner avatar.
 3. Featured slugs in `scripts/featured.json` are pinned to the top.
 4. Astro builds a static page per server at `/server/[slug]/` plus index/category/search pages.
-5. The cron reruns the scraper each Sunday and commits `src/data/servers.json`. Cloudflare auto-redeploys.
+5. The cron reruns the scraper each Sunday and commits `src/data/servers.json`. It does **not** auto-deploy — run the manual deploy (see below) to publish the refreshed data.
 
 ## Project structure
 
@@ -83,7 +83,7 @@ npm run build
 npx wrangler deploy
 ```
 
-The weekly cron commits the new `servers.json` to `main`, and the next deploy picks it up automatically.
+The weekly cron only commits the refreshed `servers.json` to `main`; there is no auto-deploy step, so the live site updates the next time you run the deploy above.
 
 ## Monetization (built-in but optional)
 
