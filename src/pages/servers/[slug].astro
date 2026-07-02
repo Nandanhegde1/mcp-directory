@@ -95,12 +95,18 @@ const jsonLd = [
     <section class="mt-10">
       <h2 class="text-xl font-semibold text-white mb-3">Install</h2>
       <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-sm text-slate-100"><code>{server.installCommand}</code></pre>
+      <p class="text-xs text-slate-500 mt-2">
+        Auto-generated from the repo's primary language — check the
+        <a href={server.url} rel="noopener" target="_blank" class="underline hover:text-slate-300">repo's own README</a>
+        for its exact install instructions.
+      </p>
     </section>
 
     <section class="mt-10">
       <h2 class="text-xl font-semibold text-white mb-3">Claude Desktop config</h2>
       <p class="text-sm text-slate-400 mb-3">
-        Add this to your <code class="text-brand-500">claude_desktop_config.json</code>:
+        A starting point for your <code class="text-brand-500">claude_desktop_config.json</code>
+        (auto-generated — the repo's README may specify a published package name or required env vars):
       </p>
       <pre class="rounded-lg bg-slate-900 border border-slate-800 p-4 overflow-x-auto text-sm text-slate-100"><code>{server.configSnippet}</code></pre>
     </section>

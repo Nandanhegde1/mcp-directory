@@ -126,12 +126,14 @@ function excerptReadme(readme: string, maxLen = 600): string {
   return text;
 }
 
-function inferCategory(repo: GhRepo, readme: string): McpCategory {
+function inferCategory(repo: GhRepo, _readme: string): McpCategory {
+  // Classify from author-curated metadata only. READMEs of real projects mention
+  // every technology they touch (auth, postgres, docker, …), which mis-filed
+  // servers into whichever rule happened to match first.
   const haystack = [
     repo.name,
     repo.description ?? '',
     ...(repo.topics ?? []),
-    readme.slice(0, 1000),
   ]
     .join(' ')
     .toLowerCase();
@@ -201,11 +203,17 @@ function buildConfigSnippet(repo: GhRepo): string {
   );
 }
 
-function isLikelyMcpServer(repo: GhRepo, readme: string): boolean {
+function isLikelyMcpServer(repo: GhRepo, _readme: string): boolean {
   if (repo.archived || repo.fork) return false;
-  const text = `${repo.name} ${repo.description ?? ''} ${(repo.topics ?? []).join(' ')} ${readme.slice(0, 2000)}`.toLowerCase();
-  // Must mention MCP-related terms in name, description, topics, or README header
-  return /\b(mcp|model[\s-]?context[\s-]?protocol|modelcontextprotocol)\b/.test(text);
+  // Curated link lists aren't servers.
+  if (/^awesome[-_.]/i.test(repo.name)) return false;
+  // Precision over recall: the repo's OWN metadata (name/description/topics) must
+  // be MCP-related. A passing README mention is not enough — huge projects that
+  // merely integrate with MCP (browsers, workflow engines, tutorial repos) were
+  // polluting the index and are exactly what an MCP-literate reader spots first.
+  const name = repo.name.toLowerCase();
+  const meta = `${repo.description ?? ''} ${(repo.topics ?? []).join(' ')}`.toLowerCase();
+  return /mcp/.test(name) || /\bmcp\b|model[\s-]?context[\s-]?protocol|modelcontextprotocol/.test(meta);
 }
 
 async function main(): Promise<void> {

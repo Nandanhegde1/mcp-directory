@@ -6,7 +6,7 @@ A free, static, SEO-first directory of every public **Model Context Protocol (MC
 - **Data source:** [GitHub Search API](https://docs.github.com/en/rest/search) (public repos tagged `mcp-server`, `model-context-protocol`, etc.)
 - **Refresh cadence:** weekly via GitHub Actions cron (Sundays 03:17 UTC)
 - **License:** MIT
-- **Servers indexed:** ~2,100+ (auto-updates each Sunday)
+- **Servers indexed:** ~2,000 (metadata-verified MCP projects only; auto-updates each Sunday)
 
 ## Why
 
@@ -68,28 +68,20 @@ public/
 | --- | --- | --- |
 | `GITHUB_TOKEN` | Used by the scraper (local + CI) | Required for scraping |
 | `SITE_URL` | Canonical URL for sitemap/OG tags | Recommended |
-| `PUBLIC_FORMSPREE_ID` | Formspree form ID for `/submit/` | Optional |
-| `PUBLIC_STRIPE_FEATURED_LINK` | Stripe Payment Link for `/featured/` | Optional |
-| `PUBLIC_ADSENSE_CLIENT` | `ca-pub-XXXXXXXXXX` for AdSense | Optional |
+| `PUBLIC_FORMSPREE_ID` | Formspree form ID for `/submit/` (falls back to a prefilled GitHub issue) | Optional |
 
 For the GitHub Action, store the token as repo secret `SCRAPER_GITHUB_TOKEN` (preferred — gives 5,000 req/hr) or fall back to the default `GITHUB_TOKEN` (1,000 req/hr).
 
 ## Deploy (Cloudflare Workers)
 
-The site is deployed to Cloudflare Workers (static assets). To redeploy manually after a content change:
+The site is deployed to Cloudflare Workers (static assets). Manual deploy after a content change:
 
 ```powershell
 npm run build
 npx wrangler deploy
 ```
 
-The weekly cron only commits the refreshed `servers.json` to `main`; there is no auto-deploy step, so the live site updates the next time you run the deploy above.
-
-## Monetization (built-in but optional)
-
-- **Featured listings** (`/featured/`): one-time fee per slot. After payment, add the slug to `scripts/featured.json` and push.
-- **Affiliate links**: edit `BaseLayout.astro` / detail page CTA.
-- **AdSense**: set `PUBLIC_ADSENSE_CLIENT` once approved.
+The weekly cron commits the refreshed `servers.json` and then builds + deploys automatically **if** the `CLOUDFLARE_API_TOKEN` repo secret is set; without it, the deploy step skips and the live site updates on the next manual deploy above.
 
 ## Disclaimer
 

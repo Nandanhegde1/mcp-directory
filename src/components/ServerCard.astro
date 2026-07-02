@@ -20,6 +20,7 @@ const initials = (server.name.replace(/[^a-z0-9]+/gi, ' ').trim().split(' ').sli
   data-server-owner={server.owner.toLowerCase()}
   data-server-topics={server.topics.join(' ').toLowerCase()}
   data-server-category={server.category}
+  data-server-updated={server.updatedAt}
 >
   <div class="flex items-start gap-3">
     <div class="shrink-0 relative">

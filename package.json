@@ -9,7 +9,6 @@
     "preview": "npm run build && wrangler dev",
     "astro": "astro",
     "scrape": "tsx scripts/scrape.ts",
-    "generate-og": "tsx scripts/generate-og.ts",
     "deploy": "npm run build && wrangler deploy",
     "cf-typegen": "wrangler types"
   },

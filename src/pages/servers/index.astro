@@ -83,6 +83,7 @@ const sorted = [...allServers].sort((a, b) => b.stars - a.stars);
         owner: c.dataset.serverOwner ?? '',
         topics: c.dataset.serverTopics ?? '',
         category: c.dataset.serverCategory ?? '',
+        updated: Date.parse(c.dataset.serverUpdated ?? '') || 0,
       }));
 
       const tokenize = (q: string) => q.toLowerCase().split(/\s+/).map((t) => t.trim()).filter(Boolean);
@@ -120,7 +121,7 @@ const sorted = [...allServers].sort((a, b) => b.stars - a.stars);
           .filter((x) => x.s > 0);
 
         if (sort === 'name') filtered.sort((a, b) => a.m.name.localeCompare(b.m.name));
-        else if (sort === 'recent') filtered.sort((a, b) => a.m.idx - b.m.idx);
+        else if (sort === 'recent') filtered.sort((a, b) => b.m.updated - a.m.updated);
         else if (tokens.length > 0) filtered.sort((a, b) => b.s - a.s || a.m.idx - b.m.idx);
         else filtered.sort((a, b) => a.m.idx - b.m.idx);
 
