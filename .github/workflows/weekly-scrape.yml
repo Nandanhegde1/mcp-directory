@@ -27,6 +27,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.SCRAPER_GITHUB_TOKEN || secrets.GITHUB_TOKEN }}
         run: npm run scrape
 
+      # Verify BEFORE publishing: classifier rules + a full site build must pass
+      # with the fresh data, or nothing is committed/deployed.
+      - name: Test + build gate
+        run: |
+          npm test
+          npm run build
+
       - name: Commit & push if changed
         id: commit
         run: |
@@ -53,3 +60,16 @@ jobs:
           fi
           npm run build
           npx wrangler deploy
+
+      - name: Open or update a failure issue
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "Weekly scrape failed" --json number --jq ".[0].number // empty")
+          body="Weekly scrape failed at $(date -u '+%Y-%m-%d %H:%M UTC') — [run]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)"
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --repo "$GITHUB_REPOSITORY" --body "$body"
+          else
+            gh issue create --repo "$GITHUB_REPOSITORY" --title "Weekly scrape failed" --body "$body"
+          fi

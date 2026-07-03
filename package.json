@@ -10,7 +10,8 @@
     "astro": "astro",
     "scrape": "tsx scripts/scrape.ts",
     "deploy": "npm run build && wrangler deploy",
-    "cf-typegen": "wrangler types"
+    "cf-typegen": "wrangler types",
+    "test": "tsx --test scripts/classify.test.ts"
   },
   "dependencies": {
     "@astrojs/cloudflare": "12",

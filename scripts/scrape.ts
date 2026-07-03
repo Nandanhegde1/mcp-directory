@@ -13,7 +13,8 @@
 import { writeFileSync, mkdirSync, existsSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { McpServer, McpCategory, ScrapeManifest } from '../src/types.ts';
+import type { McpServer, ScrapeManifest } from '../src/types.ts';
+import { isLikelyMcpServer, inferCategory, slugify } from './classify.ts';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const OUT_PATH = join(__dirname, '..', 'src', 'data', 'servers.json');
@@ -126,47 +127,6 @@ function excerptReadme(readme: string, maxLen = 600): string {
   return text;
 }
 
-function inferCategory(repo: GhRepo, _readme: string): McpCategory {
-  // Classify from author-curated metadata only. READMEs of real projects mention
-  // every technology they touch (auth, postgres, docker, …), which mis-filed
-  // servers into whichever rule happened to match first.
-  const haystack = [
-    repo.name,
-    repo.description ?? '',
-    ...(repo.topics ?? []),
-  ]
-    .join(' ')
-    .toLowerCase();
-
-  const rules: [McpCategory, RegExp][] = [
-    ['database', /\b(postgres|mysql|sqlite|mongo|redis|database|sql|nosql|vector\s?db|pinecone|qdrant|chroma|supabase|neon|planetscale|duckdb|clickhouse)\b/],
-    ['filesystem', /\b(filesystem|file\ssystem|file-system|files?|directory|storage|s3|gdrive|google\sdrive|dropbox|onedrive)\b/],
-    ['cloud', /\b(aws|azure|gcp|google\scloud|kubernetes|k8s|docker|terraform|cloudflare|vercel|fly\.io)\b/],
-    ['devtools', /\b(git|github|gitlab|bitbucket|ci\/cd|jenkins|linter|formatter|ide|vscode|intellij|debug)\b/],
-    ['communication', /\b(slack|discord|email|smtp|gmail|outlook|whatsapp|telegram|sms|twilio)\b/],
-    ['productivity', /\b(notion|obsidian|todo|task|calendar|jira|linear|trello|asana|notes?)\b/],
-    ['ai', /\b(llm|openai|anthropic|gemini|huggingface|embedding|rag|agent|fine-?tune)\b/],
-    ['search', /\b(search|brave|bing|duckduckgo|tavily|perplexity|knowledge\s?base|wiki)\b/],
-    ['finance', /\b(stripe|paypal|crypto|bitcoin|ethereum|trading|stock|invoice|accounting|quickbooks)\b/],
-    ['media', /\b(image|video|audio|photo|youtube|twitch|spotify|figma|design|canva)\b/],
-    ['monitoring', /\b(log|metric|observability|sentry|datadog|grafana|prometheus|newrelic|monitoring|analytics)\b/],
-    ['security', /\b(auth|oauth|jwt|secrets?|vault|password|security|scanner|cve|vulnerab)\b/],
-  ];
-
-  for (const [cat, re] of rules) {
-    if (re.test(haystack)) return cat;
-  }
-  return 'other';
-}
-
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .slice(0, 80);
-}
-
 function buildInstallCommand(repo: GhRepo): string {
   const lang = (repo.language ?? '').toLowerCase();
   const fullName = repo.full_name;
@@ -203,27 +163,6 @@ function buildConfigSnippet(repo: GhRepo): string {
   );
 }
 
-function isLikelyMcpServer(repo: GhRepo, _readme: string): boolean {
-  if (repo.archived || repo.fork) return false;
-  // Official orgs are always in scope.
-  if (['modelcontextprotocol', 'anthropics'].includes(repo.owner.login.toLowerCase())) return true;
-  // Curated link lists aren't servers.
-  if (/^awesome[-_.]/i.test(repo.name)) return false;
-  // Precision over recall: the repo's OWN metadata must identify it as an MCP
-  // project. A passing README mention is not enough, and neither is a bare
-  // `mcp` topic — huge unrelated projects (workflow engines, tutorial repos)
-  // tag `mcp` for discoverability and were polluting the index; that's exactly
-  // what an MCP-literate reader spots first. Qualifying signals:
-  //   - "mcp" in the repo NAME, or
-  //   - a specific topic: mcp-server(s) / mcp-client / model-context-protocol, or
-  //   - MCP named in the repo's own DESCRIPTION.
-  const name = repo.name.toLowerCase();
-  if (/mcp/.test(name)) return true;
-  const topics = (repo.topics ?? []).map((t) => t.toLowerCase());
-  if (topics.some((t) => /^mcp-servers?$|^mcp-client$|^model-context-protocol$/.test(t))) return true;
-  return /\bmcp\b|model[\s-]?context[\s-]?protocol|modelcontextprotocol/.test((repo.description ?? '').toLowerCase());
-}
-
 async function main(): Promise<void> {
   console.log('🔎 Scraping GitHub for MCP servers…');
   const seen = new Map<number, GhRepo>();
@@ -235,17 +174,20 @@ async function main(): Promise<void> {
     console.log(`    → +${results.length} (total unique: ${seen.size})`);
   }
 
-  console.log(`\n📦 Enriching ${seen.size} repos with README data…`);
+  // Filter FIRST — the classifier only reads repo metadata, so fetching READMEs
+  // for repos we then discard wasted thousands of raw.githubusercontent calls
+  // per run and widened the window for partial-failure truncation.
+  const candidates = [...seen.values()].filter((r) => isLikelyMcpServer(r));
+  console.log(`\n📦 ${candidates.length}/${seen.size} pass the metadata filter; fetching READMEs for survivors…`);
   const servers: McpServer[] = [];
   let i = 0;
-  for (const repo of seen.values()) {
+  for (const repo of candidates) {
     i++;
-    if (i % 25 === 0) console.log(`  …${i}/${seen.size}`);
+    if (i % 25 === 0) console.log(`  …${i}/${candidates.length}`);
     const readme = await fetchReadme(repo.owner.login, repo.name, repo.default_branch);
-    if (!isLikelyMcpServer(repo, readme)) continue;
 
     const slug = slugify(`${repo.owner.login}-${repo.name}`);
-    const category = inferCategory(repo, readme);
+    const category = inferCategory(repo);
     const official =
       repo.owner.login.toLowerCase() === 'modelcontextprotocol' ||
       repo.owner.login.toLowerCase() === 'anthropics';
