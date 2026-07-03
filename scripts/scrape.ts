@@ -292,6 +292,21 @@ async function main(): Promise<void> {
     return b.stars - a.stars;
   });
 
+  // Sanity gate: a rate-limited or partially-failed run must never overwrite a
+  // healthy dataset (the cron would commit AND auto-deploy the truncated file).
+  if (existsSync(OUT_PATH)) {
+    try {
+      const prev = JSON.parse(readFileSync(OUT_PATH, 'utf8')) as ScrapeManifest;
+      const floor = Math.floor((prev.servers?.length ?? 0) * 0.7);
+      if (servers.length < floor) {
+        console.error(`💥 Sanity gate: new run found ${servers.length} servers vs ${prev.servers.length} previously (< 70%). Refusing to overwrite — likely a partial/rate-limited scrape.`);
+        process.exit(1);
+      }
+    } catch {
+      /* unreadable previous file — proceed with the fresh write */
+    }
+  }
+
   const manifest: ScrapeManifest = {
     generatedAt: new Date().toISOString(),
     count: servers.length,
